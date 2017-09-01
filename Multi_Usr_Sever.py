@@ -18,7 +18,9 @@ muted_soc=[]
 def mute(command):
     #length is in min
     name=command[1]
+    print "just gave the name variable purpuse in the mute action"
     if name not in admins:
+        print name
         if len(command)>=2:
             muted_socket = list(socket_dic.keys())[list(socket_dic.values()).index(name)]
             try:
@@ -47,7 +49,7 @@ def send_waiting_messages():
             open_client_sockets.remove(client_socket)
         messages_to_send.remove(message)
 def check_list(target_socket):
-    for socket in muted_sockets:
+    for socket in muted_soc:
         if socket[1]==target_socket:
             return socket[2]
     return None
@@ -73,6 +75,8 @@ def data_reader(current_socket):
             messages_to_send.append([client_socket, data])
         temp_client_sockets = []
     elif name in admins:
+        print "entered admin commands section"
+        print message
         if ">>mute" in message and len(message.split(" "))>=1:
             new_message=message.split(" ")
             if new_message[0]!=">>mute":
@@ -84,14 +88,14 @@ def data_reader(current_socket):
                 temp_client_sockets = []
             elif message[1] in socket_dic.values() and message[1] not in admins:
                 mute(new_message)
-    elif check_list(current_socket)!=None:
+    elif check_list(current_socket)==None:
         new_message=time+ name +"\r\n"+ message
         temp_client_sockets = open_client_sockets[::]#sending the message
         temp_client_sockets.remove(current_socket)
         for client_socket in temp_client_sockets:
             messages_to_send.append([client_socket, new_message])
         temp_client_sockets = []
-    elif check_list(current_socket)>time.time():
+    elif int(check_list(current_socket))>time.time():
         new_message = time + name + "\r\n" + message
         temp_client_sockets = open_client_sockets[::]  # sending the message
         temp_client_sockets.remove(current_socket)
