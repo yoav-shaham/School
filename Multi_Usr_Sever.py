@@ -3,15 +3,6 @@ import socket
 import select
 import sys
 
-i, o, e = sys.stdin, sys.stdout, sys.stderr
-from scapy.all import *
-
-sys.stdin, sys.stdout, sys.stderr = i, o, e
-from scapy.layers.dns import DNS, DNSQR, DNSRR, UDP
-from scapy.layers.inet import IP, TCP, UDP, ICMP, Raw
-from scapy.layers.inet import IPTools
-from scapy import as_resolvers
-
 server_socket = socket.socket()
 server_socket.bind(("0.0.0.0", 44))
 server_socket.listen(5)
