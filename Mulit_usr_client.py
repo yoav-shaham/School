@@ -1,8 +1,8 @@
-__author__ = 'Cyber-01'
 import socket
 import select
 import sys
 import msvcrt
+from datetime import datetime
 
 
 name=raw_input("Please insert your name: ")#getting client name
@@ -11,15 +11,18 @@ port = raw_input("please insert the port of the desired server: ")#getting serve
 the_socket = socket.socket()
 try:
     the_socket.connect((ip, int(port)))#trying to connect
+
 except:
     exit("Something went wrong exiting")#failed to connect
 print "Please insert the desired message or press on enter to close the connection: "#
 
 def message_sender(message):
-    if message == "":
+    if message == ">>exit":
         close_connection()#sdending the messages
         exit("You closed the connection")
-    the_socket.send(name+"\r\n"+message)
+    time= str(datetime.now().time().hour)+":"+str(datetime.now().time().minute)+" "
+    the_socket.send(time+"\r\n"+name+"\r\n"+message)
+    time=""
 
 
 def recive_data():
@@ -29,7 +32,9 @@ def recive_data():
 
 
 def close_connection():
-    the_socket.send(name+"\r\n")#sending a closing message
+    time = str(datetime.now().time().hour) + ":" + str(datetime.now().time().minute) + " "
+    the_socket.send(time+"\r\n"+name+"\r\n"+">>exit")#sending a closing message
+    time=""
 
 
 def main():
