@@ -2,6 +2,7 @@ import socket
 import select
 import sys
 import time
+import datetime
 
 server_socket = socket.socket()
 server_socket.bind(("0.0.0.0", 44))
@@ -21,7 +22,7 @@ def mute(command):
     print "just gave the name variable purpuse in the mute action"
     if name not in admins:
         print name
-        if len(command)>=2:
+        if len(command)>=2 or command[3]="":
             muted_socket = list(socket_dic.keys())[list(socket_dic.values()).index(name)]
             try:
                 length=command[2]
@@ -30,7 +31,7 @@ def mute(command):
         else:
             muted_socket=list(socket_dic.keys())[list(socket_dic.values()).index(name)]
             length=3
-        mute_till=time.time()+60*length
+        mute_till=time.time()+60*int(length)
         muted_soc.append([muted_socket,mute_till])
 
 
@@ -50,15 +51,17 @@ def send_waiting_messages():
         messages_to_send.remove(message)
 def check_list(target_socket):
     for socket in muted_soc:
-        if socket[1]==target_socket:
-            return socket[2]
+        if socket[0]==target_socket:
+            print socket[1]
+            print time.time()
+            return socket[1]
     return None
 
 
 def data_reader(current_socket):
     data = current_socket.recv(1024)
     data2=data[::]
-    time,name,message = data.split("\r\n")#readiung the messge from the socket
+    time_sent,name,message = data.split("\r\n")#readiung the messge from the socket
     if name in admins:
         name="@"+name
     print data
@@ -68,9 +71,9 @@ def data_reader(current_socket):
         pass
     elif message == ">>exit":
         open_client_sockets.remove(current_socket)#removing someone who left
-        print time+"Connection with " + name + " closed"
+        print time_sent+"Connection with " + name + " closed"
         temp_client_sockets = open_client_sockets[::]
-        data=time+name+"\r\n"+"has left the server"
+        data=time_sent+name+"\r\n"+"has left the server"
         for client_socket in temp_client_sockets:
             messages_to_send.append([client_socket, data])
         temp_client_sockets = []
@@ -78,36 +81,40 @@ def data_reader(current_socket):
         print "entered admin commands section"
         print message
         if ">>mute" in message and len(message.split(" "))>=1:
-            "entered mute for somereason"
+            print "entered mute for somereason"
             new_message=message.split(" ")
+            print new_message
             if new_message[0]!=">>mute":
-                new_message = time + name + "\r\n" + message
+                new_message = time_sent + name + "\r\n" + message
                 temp_client_sockets = open_client_sockets[::]  # sending the message
                 temp_client_sockets.remove(current_socket)
                 for client_socket in temp_client_sockets:
                     messages_to_send.append([client_socket, new_message])
                 temp_client_sockets = []
-            elif message[1] in socket_dic.values() and message[1] not in admins:
+                return
+            elif new_message[1] in socket_dic.values() and new_message[1] not in admins:
                 mute(new_message)
+                print "something went right"
+                return
     if check_list(current_socket)==None:
         print "got out of admin command center1"
-        new_message=time+ name +"\r\n"+ message
+        new_message=time_sent+ name +"\r\n"+ message
         temp_client_sockets = open_client_sockets[::]#sending the message
         temp_client_sockets.remove(current_socket)
         for client_socket in temp_client_sockets:
             messages_to_send.append([client_socket, new_message])
         temp_client_sockets = []
-    elif int(check_list(current_socket))>time.time():
+    elif int(check_list(current_socket))>int(time.time()):
+        time_now_muted = str(datetime.now().time().hour) + ":" + str(datetime.now().time().minute) + " "
+        messages_to_send.append([current_socket,time_now_muted +"server\r\nyou have been muted please wait to be unmuted or just wait"])
+    else:
         print "got out of admin command center2"
-        new_message = time + name + "\r\n" + message
+        new_message = time_sent + name + "\r\n" + message
         temp_client_sockets = open_client_sockets[::]  # sending the message
         temp_client_sockets.remove(current_socket)
         for client_socket in temp_client_sockets:
             messages_to_send.append([client_socket, new_message])
         temp_client_sockets = []
-    else:
-        print "got out of admin command center3"
-        return
 
 
 while True:
