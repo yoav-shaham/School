@@ -2,7 +2,7 @@ import socket
 import select
 import sys
 import time
-import datetime
+from datetime import datetime
 
 server_socket = socket.socket()
 server_socket.bind(("0.0.0.0", 44))
@@ -13,8 +13,34 @@ messages_to_send = []
 admins=["yoav","yoyo"]
 socket_dic={}
 muted_soc=[]
+def remove_user(command):
+    name = command[1]
+    kicking_socket=list(socket_dic.keys())[list(socket_dic.values()).index(name)]
+    if len(command)>2:
+        reason=command[2::]
+        reason.join(" ")
+        time_now_kicking = str(datetime.now().time().hour) + ":" + str(datetime.now().time().minute) + " "
+        kicking_socket.send(time_now_kicking+"server\r\nYou have been kicked by an admin he gave this reason: "+reason)
+    else:
+        time_now_kicking = str(datetime.now().time().hour) + ":" + str(datetime.now().time().minute) + " "
+        kicking_socket.send(time_now_kicking + "server\r\nYou have been kicked by an admin and he did not provide a reason")
+
+    new_message = time_now_kicking + "server" + "\r\n" + name+" has been kicked off the server"
+    temp_client_sockets = open_client_sockets[::]  # sending the message
+    temp_client_sockets.remove(kicking_socket)
+    for client_socket in temp_client_sockets:
+        messages_to_send.append([client_socket, new_message])
+    temp_client_sockets = []
+    send_waiting_messages()
+    kicking_socket.close
 
 
+
+
+def new_manager(command):
+    name=command[1]
+    if name not in admins:
+        admins.append(name)
 
 def mute(command):
     #length is in min
@@ -22,7 +48,7 @@ def mute(command):
     print "just gave the name variable purpuse in the mute action"
     if name not in admins:
         print name
-        if len(command)>=2 or command[3]="":
+        if len(command)>=2 or command[3]=="":
             muted_socket = list(socket_dic.keys())[list(socket_dic.values()).index(name)]
             try:
                 length=command[2]
@@ -80,7 +106,7 @@ def data_reader(current_socket):
     if "@" in name or name in admins:
         print "entered admin commands section"
         print message
-        if ">>mute" in message and len(message.split(" "))>=1:
+        if ">>mute" in message and len(message.split(" "))>1:
             print "entered mute for somereason"
             new_message=message.split(" ")
             print new_message
@@ -96,6 +122,18 @@ def data_reader(current_socket):
                 mute(new_message)
                 print "something went right"
                 return
+        if ">>new_manager" in message and len(message.split(" "))>1:
+            new_message = message.split(" ")
+            if new_message[0]==">>new_manager":
+                new_manager(message)
+        if ">>remove_user" in message and len(message.split(" "))>1:
+            new_message = message.split(" ")
+            if new_message[0]==">>remove_user" and new_message[1] not in admins:
+                remove_user(message)
+            if new_message[1] in admins:
+                time_now_kicking = str(datetime.now().time().hour) + ":" + str(datetime.now().time().minute) + " "
+                messages_to_send.append([current_socket,time_now_kicking + "server\r\nyou cannot kick an admin"])
+
     if check_list(current_socket)==None:
         print "got out of admin command center1"
         new_message=time_sent+ name +"\r\n"+ message
