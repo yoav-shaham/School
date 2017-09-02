@@ -74,10 +74,11 @@ def data_reader(current_socket):
         for client_socket in temp_client_sockets:
             messages_to_send.append([client_socket, data])
         temp_client_sockets = []
-    elif name in admins:
+    if "@" in name or name in admins:
         print "entered admin commands section"
         print message
         if ">>mute" in message and len(message.split(" "))>=1:
+            "entered mute for somereason"
             new_message=message.split(" ")
             if new_message[0]!=">>mute":
                 new_message = time + name + "\r\n" + message
@@ -88,7 +89,8 @@ def data_reader(current_socket):
                 temp_client_sockets = []
             elif message[1] in socket_dic.values() and message[1] not in admins:
                 mute(new_message)
-    elif check_list(current_socket)==None:
+    if check_list(current_socket)==None:
+        print "got out of admin command center1"
         new_message=time+ name +"\r\n"+ message
         temp_client_sockets = open_client_sockets[::]#sending the message
         temp_client_sockets.remove(current_socket)
@@ -96,6 +98,7 @@ def data_reader(current_socket):
             messages_to_send.append([client_socket, new_message])
         temp_client_sockets = []
     elif int(check_list(current_socket))>time.time():
+        print "got out of admin command center2"
         new_message = time + name + "\r\n" + message
         temp_client_sockets = open_client_sockets[::]  # sending the message
         temp_client_sockets.remove(current_socket)
@@ -103,6 +106,7 @@ def data_reader(current_socket):
             messages_to_send.append([client_socket, new_message])
         temp_client_sockets = []
     else:
+        print "got out of admin command center3"
         return
 
 
