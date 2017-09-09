@@ -30,3 +30,5 @@
  17. hat
  18. warm hat
  19. charger 
+ 20. Kipa
+ 
