@@ -4,7 +4,6 @@ import sys
 import msvcrt
 from datetime import datetime
 
-
 name=raw_input("Please insert your name: ")#getting client name
 while len(name.split(" "))>=2:
     name = raw_input("Please insert your name in a single word: ")  # getting client name
