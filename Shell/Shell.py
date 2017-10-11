@@ -2,6 +2,15 @@ __author__ = "Yoav Shaham"
 import getpass
 import os
 import binascii
+import re
+
+def search_file(regex_statement,path,flag=0):
+    if flag==0:
+        string=open(path,"r").read()
+    else:
+        string=path
+    return re.findall(regex_statement,string)
+
 
 def read_binary(path):
     file=open(path,"rb").read()
@@ -10,8 +19,18 @@ def read_binary(path):
 
 
 def get_command(input):
+    if "| grep" in input:
+        input=input.split("|")
+        string=get_command(input[0])
+        regex_statement=input[1].split(" ")
+        if len(regex_statement)<=2:
+            return str(string)+" "+"you need a regex statement to use grep"
+        else:
+            regex_statement=regex_statement[2]
+            return string+" "+str(search_file(regex_statement,string,1))
     input = input.split(" ")
     command = input[0]
+
     if command == "hello":
         return getpass.getuser()
     elif command == "HexDump":
@@ -24,6 +43,15 @@ def get_command(input):
             else:
                 return read_binary(path)
     elif command == "grep":
+        if len(input) <= 2:
+            return "for grep command there need to be three variables"
+        else:
+            regex_statement=input[1]
+            path=input[2]
+            if not os.path.isfile(path):
+                return "In Order To Use grep You Need a Viable Path To A File To Look Into"
+            else:
+                return search_file(regex_statement,path)
 
     else:
         return "Not viable command"
