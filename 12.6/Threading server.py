@@ -7,7 +7,7 @@ from datetime import datetime
 O1_switch = True
 admins = []
 stats = {}
-
+muted=[]
 # the stats dictionary will look like this :
 # {
 #     name:[  socket,
@@ -19,6 +19,12 @@ socket_username={} #currently connected sockets and thier username
 username_socket={"yoav":"hello"} #currently connected sockets and thier username
 # -------------------------------------------
 
+def new_manager(command):
+    global admins
+    name=command[1]
+    if name not in admins:
+        admins.append(name)
+    print admins
 
 def name_check(name):
     global username_socket
@@ -28,7 +34,20 @@ def name_check(name):
         return "ERROR 2"
     else:
         return "SUCCESS"
-
+def remove_usr(name,message):
+    sckt=username_socket[name]
+    print "The User "+ name+" has left the server abruptly"
+    try:
+        sckt.send(message)
+    except:
+        pass
+    sckt=username_socket[name]
+    sckt.close()
+    holder=stats[name]
+    holder=holder[2]
+    holder[-1][-1]=time.time()
+    del username_socket[name]
+    del socket_username[sckt]
 
 def message_sender(sckt,message):
     sckt.send(message)
@@ -36,38 +55,49 @@ def message_sender(sckt,message):
 def message_reciver(rcv_sckt):
     global O1_switch,socket_username,pending_messages,admins
     name=socket_username[rcv_sckt]
+    if name in admins:
+        new_name="@"+name
+    else:
+        new_name=name
     while O1_switch:
         msg=rcv_sckt.recv(1024)
         if msg=="" or None:
-            print "The User "+ name+" has left the server abruptly"
-            try:
-                rcv_sckt.send("you have been disconnected")
-            except:
-                pass
-            rcv_sckt.close()
-            holder=stats[name]
-            holder=holder[2]
-            holder[-1][-1]=time.time()
+            print "The User "+ new_name+" has left the server abruptly"
+            remove_usr(name,"You Have been disconnected")
         if msg == ">>exit":
-            pass
+            remove_usr(name,"Goodbye!")
         elif ">>private" in msg and len(msg.split(" ")) >= 3:
-            pass
+            split_msg=msg.split(" ")
+            if split_msg[1] not in username_socket.keys():
+                message_sender(rcv_sckt,"The Person You Tried To Message Doesnt or Isn't Connected To The Server")
+            else:
+                to_socket=username_socket[split_msg[1]]
+                msg=split_msg[2::]
+                msg=" ".join(msg)
+                time= str(datetime.datetime.now().time().hour) + ":" + str(datetime.datetime.now().time().minute) + " "
+                new_msg=time+new_name+": "+msg
+                message_sender(to_socket,new_msg)
         elif name in admins and ">>mute" in msg and len(msg.split(" "))>1:
-            pass
+            split_msg=msg.split(" ")
+            user_to_mute=split_msg[1]
+
+
         elif ">>new_manager" in msg and len(msg.split(" ")) >= 2 and name in admins:
-            pass
+            new_manager(msg.split(" "))
+            message_sender(rcv_sckt,str(msg.split(" ")[1])+ " Has Been Added To The Admins")
         elif ">>remove_user" in msg and len(msg.split(" ")) > 1 and name in admins:
-            pass
+            usr_to_kick=msg.split(" ")[1]
+            if usr_to_kick not in username_socket.keys():
+                message_sender(rcv_sckt,"Sorry That User Doesn't exist or Isn't Connected")
+            else:
+                remove_usr(usr_to_kick,"You Hve been kicked by the admin")
         elif ">>stat" in msg and len(msg.split(" ")) > 1:
             pass
         else:
             time= str(datetime.datetime.now().time().hour) + ":" + str(datetime.datetime.now().time().minute) + " "
             sockets=socket_username.keys()
-            if name in admins:
-                new_name="@"+name
-            else:
-                new_name=name
-            new_message=time+name+": "+msg
+
+            new_msg=time+new_name+": "+msg
             sockets.remove(rcv_sckt)
             for sending_sckt in sockets:
                 message_sender(sending_sckt,new_msg)
