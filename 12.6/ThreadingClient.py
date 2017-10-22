@@ -1,7 +1,6 @@
 __author__="Yoav Shaham"
 import socket
 import threading
-import msvcrt
 
 O1_Switch=True
 def send_msg(sckt):
