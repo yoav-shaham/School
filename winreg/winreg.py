@@ -9,13 +9,12 @@ subkeyCnt, valuesCnt, modTime=QueryInfoKey(key)
 
 #--------------------------------------------------------------------------------------
 def get_history():
-    for value in xrange(valuesCnt):
-        print EnumValue(key,value)[1]
-
+    history = []
+    MRUList=str(QueryValueEx(key, "MRUList")[0])
+    for letter in MRUList:
+        history.append(str(QueryValueEx(key, letter)[0]))
+    return history
 def main():
-    MRU=EnumValue(key,"MRUList")
-    print "hey"
-    print MRU
 
 if __name__ =="__main__":
     main()

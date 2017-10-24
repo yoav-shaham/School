@@ -1,7 +1,6 @@
 __author__ = 'Cyber-01'
 import hashlib
 import multiprocessing
-import myglobals
 encrypted="EC9C0F7EDCC18A98B1F31853B1813301".lower()
 flag=None
 
@@ -38,7 +37,6 @@ def divider(parts, start , end):
     return sections
 
 def main():
-    myglobals.data=0
     print encrypted
 
     procecess=[]
