@@ -6,9 +6,10 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
+
+
 # Instantiates a client
 client = speech.SpeechClient()
-
 # The name of the audio file to transcribe
 file_name = os.path.join(
     os.path.dirname(__file__),
