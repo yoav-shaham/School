@@ -16,4 +16,5 @@ def foreach_window(hwnd, lParam):
     return True
 EnumWindows(EnumWindowsProc(foreach_window), 0)
  
-print(titles)
+for x in titles:
+    print x
